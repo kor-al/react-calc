@@ -86,18 +86,51 @@ class Operation {
 
 }
 
+class Button extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick(){
+        let separator = ''
+        if (this.props.type === 'operation'){
+            separator = ' ';
+        }
+        
+        this.props.update(`${separator}${this.props.label}`);
+    }
+
+    render() {
+        return ( 
+            <button id = {this.props.id} onClick = {this.handleClick} > {this.props.label}</button>)
+    }
+
+}
+
 class Calc extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            input: ''
-        };
+        // this.state = {
+        //     input: ''
+        //     //inputDiv: undefined
+        // };
+        
         this.ops = new Stack();
         this.values = new Stack();
 
         this.execute = this.execute.bind(this);
         this.getInput = this.getInput.bind(this);
+        this.reset = this.reset.bind(this);
+        this.updateDisplay = this.updateDisplay.bind(this);
+    }
+
+    componentDidMount(){
+        //this.setState({inputDiv: document.getElementById("input")});
+        this.inputDiv = document.getElementById("input");
+        console.log( this.inputDiv )
     }
 
     isOperation(val){
@@ -110,14 +143,14 @@ class Calc extends React.Component {
     }
 
     isNumber(i){
-        let val = this.state.input[i]
-        let isStart = (i === 0) || (i > 0 && this.state.input[i-1] === '(')
+        let val = this.input[i]
+        let isStart = (i === 0) || (i > 0 && this.input[i-1] === '(')
         let isNumeric = !isNaN(val) ;
         let isDecimal = ( val === '.');
         let isMinus = (val === '-');
-        let nextIsBracket = (i + 1 < this.state.input.length ) && (this.state.input[i+1] === '(');
+        let nextIsBracket = (i + 1 < this.input.length ) && (this.input[i+1] === '(');
 
-        if (isNumeric || isDecimal || (isMinus && !nextIsBracket && (isStart || (!isStart && this.isOperation(this.state.input[i-1]) ) ) )) {
+        if (isNumeric || isDecimal || (isMinus && !nextIsBracket && (isStart || (!isStart && this.isOperation(this.input[i-1]) ) ) )) {
             return true;
         }
         else{
@@ -126,12 +159,12 @@ class Calc extends React.Component {
     }
 
     isUniMinus(i){
-        let val = this.state.input[i];
+        let val = this.input[i];
         let isMinus = (val === '-'); 
         if(i === 0 && isMinus) {
             return true;
         }
-        if(i > 0  &&  isMinus && this.isOperation(this.state.input[i-1])) {
+        if(i > 0  &&  isMinus && this.isOperation(this.input[i-1])) {
             return true;
         }
         else{
@@ -140,18 +173,32 @@ class Calc extends React.Component {
     }
 
     getInput() {
-        let inputEq = document.getElementById("input").innerText.replaceAll(' ', '');;
-        this.setState({
-            input: inputEq
-        });
+        let inputEq = this.inputDiv.innerText.replaceAll(' ', '');;
+        // this.setState({
+        //     input: inputEq
+        // });
+        this.input = inputEq;
         this.ops = new Stack();
         this.values = new Stack();
+        console.log( 'get input', inputEq);
+        console.log( 'get input', this.input);
     }
+
+    reset() {
+        this.inputDiv.innerHTML = '';
+        
+    }
+
+    updateDisplay(exp, append = true){
+        if (append) this.inputDiv.innerHTML += exp;
+        else this.inputDiv.innerHTML = exp;
+    }
+
 
     execute() {
         this.getInput();
 
-        let input = this.state.input
+        let input = this.input
         console.log('INPUT', input);
 
         for (let i = 0; i < input.length; i++) {
@@ -237,17 +284,29 @@ class Calc extends React.Component {
         }
 
         console.log('result', this.values.print());
+        this.updateDisplay(this.values.peek().toString(), false);
         return this.values.peek();
     }
 
 
     render() {
-        //this.execute()
+        const numbers = [...Array(9).keys()]
+        const operations = {'plus':'+', 'minus':'-', 'mult': '*', 'divide': '/'}
         return ( <div id = 'calc' >
             <div id = 'input' contentEditable></div> 
+            <div id='pads'>
+            {numbers.map((value) => {
+                return <Button key = {value.toString()} label ={value.toString()}  type='value' update = {this.updateDisplay} />
+            })}
+            {Object.keys(operations).map((key, index) => {
+                return <Button key = {key.toString()} label={operations[key].toString()}  type='operation' update = {this.updateDisplay} />
+            })}
+            <button id = 'clear'
+            onClick = {this.reset}> C </button>
             <button id = 'equals'
             onClick = {this.execute}> = </button>
-             </div>)
+            </div>
+            </div>)
     }
 
 }
