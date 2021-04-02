@@ -252,15 +252,15 @@ class History extends React.Component {
         this.handleResultClick= this.handleResultClick.bind(this);
     }
 
-    handleResultClick(result){
-        this.props.setValueFunc(result);
+    handleResultClick(result, expression){
+        this.props.setValueFunc(result, expression);
     }
 
     render() {
         let items = this.props.items;
         return ( 
             <ol>
-            {items.map((value, index) => {return <li key = {`item${index}`}> {value.expression} <span onClick = {() => this.handleResultClick(value.result)}>{value.result.toString()}</span> </li>})}
+            {items.map((value, index) => {return <li key = {`item${index}`}> {value.expression} <span onClick = {() => this.handleResultClick(value.result, value.expression)}>{value.result.toString()}</span> </li>})}
             </ol>
             )
     }
@@ -294,7 +294,7 @@ class Calc extends React.Component {
     }
 
     getInput() {
-        this.input = this.memoryDiv.innerText.replaceAll(' ', '');
+        this.input = this.state.currentExpr;// this.memoryDiv.innerText.replaceAll(' ', '');
         this.ops = new Stack();
         this.values = new Stack();
     }
@@ -306,7 +306,6 @@ class Calc extends React.Component {
 
     reset() {
         this.setState({currentItem : 0, currentExpr: ''});
-        this.memoryDiv.innerHTML = '';
         this.parser.reset();
         this.ops = new Stack();
         this.values = new Stack();
@@ -322,7 +321,8 @@ class Calc extends React.Component {
 
     registerInput(symbol){
         let currentSymbol = this.parser.parse(symbol);
-        this.memoryDiv.innerHTML = this.parser.getExpression();
+        //his.memoryDiv.innerHTML = this.parser.getExpression();
+        this.setState({currentExpr : this.parser.getExpression() });
         if(symbol.type === 'equals'){
             let result = this.execute();
             this.setFirstInputValue(result);
@@ -403,7 +403,7 @@ class Calc extends React.Component {
         const numbers = [...Array(9).keys()]
         const operations = {'plus':'+', 'minus':'-', 'mult': '*', 'divide': '/'}
         return ( <div id = 'calc' >
-            <div id = 'memory'></div> 
+            <div id = 'memory'>{this.state.currentExpr}</div> 
             <div id = 'input'>{this.state.currentItem}</div> 
             <div id='pads'>
             {numbers.map((value) => {
