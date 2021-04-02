@@ -19,6 +19,7 @@ class Stack {
 
     pop() {
         //return the top element of the stack and remove it from the stack
+        console.log('Stack: pop', this.stack[this.stack.length - 1])
         if (this.stack.length === 0) return undefined;
         return this.stack.pop();
     }
@@ -44,16 +45,16 @@ class Stack {
 
 class Operation {
 
-    constructor(op,isUni = false) {
+    constructor(op,unary = false) {
         if (!['+', '-', '*', '/', '(', ')'].includes(op)) throw new Error(`${op} is not an operation!`);
         this.operation = op;
-        this.isUni = isUni;
+        this.unary = unary;
     }
 
-    priority() {        
-        if (this.operation === '-' || this.isUni ) {
-        return 3;
-    }
+    priority() {
+        if (this.operation === '-' && this.unary) {
+            return 3;
+        }
         if (this.operation === '+' || this.operation === '-') {
             return 1;
         }
@@ -70,7 +71,7 @@ class Operation {
             case '+':
                 return val1 + val2;
             case '-':
-                if (this.isUni){
+                if (this.unary){
                     return -1 * val2;}
                 else{
                     return val1 - val2;
@@ -95,11 +96,12 @@ class InputParser {
         this.hasMinus = false;
         this.currentNumber = undefined;
         this.isSet = false;
+        this.bracketOpen = false;
+        this.setInputSeq = this.setInputSeq.bind(this);
     }
 
 
     parse(symbol) {
-        console.log('INPUT', symbol.val, symbol.type);
         let prevSymbol = this.inputSeq[this.inputSeq.length - 1];
 
         if (symbol.type === 'equals') {
@@ -107,8 +109,24 @@ class InputParser {
             while (this.inputSeq.length && prevSymbol.type === 'operation') {
                 this.inputSeq.pop();
             }
+            //add bracket if needed
+            if(this.bracketOpen){
+                this.inputSeq.push({type: 'bracket', val: ')'});
+            }
             this.inputSeq.push(symbol);
         }
+        if (symbol.val === '('){
+            if(this.inputSeq.length === 0 || (this.inputSeq.length && prevSymbol.type === 'operation')) {
+            this.bracketOpen = true;
+            this.inputSeq.push(symbol);
+            }
+        }
+        if (symbol.val === ')'){
+        if(this.bracketOpen &&  prevSymbol.val !== '('  && prevSymbol.type !== 'operation') {
+        this.bracketOpen = false;
+        this.inputSeq.push(symbol);
+        }
+    }
         if (symbol.type === 'operation') {
             //number ended - reset variables
             this.inNumber = false;
@@ -118,79 +136,75 @@ class InputParser {
                 this.isSet = false;
             }
             //identify unary operations
-            if (symbol.val === '-' && (this.inputSeq.length === 0 | (this.inputSeq.length && prevSymbol.type !== 'number'))) {
+            if (symbol.val === '-' && (this.inputSeq.length === 0 || (this.inputSeq.length && prevSymbol.type !== 'number'))) {
                 symbol.unary = true;
             } else {
                 symbol.unary = false;
             }
 
             //do not allow mult and division at the start of the expression
-            if (this.inputSeq.length === 0 && symbol.val !== '-' ) {}
-            else{
-            //do not allow many operations in a row
-            if (this.inputSeq.length && prevSymbol.type === 'operation' && (symbol.unary === false || (symbol.unary === true && prevSymbol.unary === true))) {
+            if (this.inputSeq.length === 0 && symbol.val !== '-') {} else {
+                //do not allow many operations in a row
+                if (this.inputSeq.length && prevSymbol.type === 'operation' && (symbol.unary === false || (symbol.unary === true && prevSymbol.unary === true))) {
                     //replace the last operation with a new one
                     this.inputSeq[this.inputSeq.length - 1] = symbol;
-            } 
-            //otherwise
-            else {
-                //push operation
-                this.inputSeq.push(symbol);
-            }
-        }
-
-        }
-    if (symbol.type === 'number' || symbol.type === 'decimal') {
-        //remove last result
-        if (this.isSet) {
-            this.inputSeq = []
-            this.isSet = false;
-        }
-        //if it's the first symbol in a number
-        if (!this.inNumber) {
-            //push a value symbol to the input sequence
-            this.inNumber = true;
-            //add zero before decimal if it only starts with it
-            if (symbol.type === 'decimal') symbol.val = '0' + symbol.val 
-            this.currentNumber = symbol;
-            this.inputSeq.push(this.currentNumber);
-            }
-        //if the number continues append values to the symbol object in the input sequence
-        else {
-            if (symbol.type === 'number') {
-                //skip more than 1 starting zero in a current number
-                if (this.currentNumber.val.length === 1 && this.currentNumber.val[0] === '0' && symbol.val === '0') {
-                    console.log("already has leading zero")
-                } else {
-                    this.currentNumber.val += symbol.val;
+                }
+                //otherwise
+                else {
+                    //push operation
+                    this.inputSeq.push(symbol);
                 }
             }
-            if (symbol.type === 'decimal') {
+
+        }
+        if (symbol.type === 'number' || symbol.type === 'decimal') {
+            //remove last result
+            if (this.isSet) {
+                this.inputSeq = []
+                this.isSet = false;
+            }
+            //if it's the first symbol in a number
+            if (!this.inNumber) {
+                //push a value symbol to the input sequence
                 this.inNumber = true;
-                //skip if more than one decimal
-                if (!this.hasDecimal) {
-                    this.currentNumber.val += symbol.val;
-                    this.hasDecimal = true;
+                //add zero before decimal if it only starts with it
+                if (symbol.type === 'decimal') {
+                    symbol.val = '0' + symbol.val;
+                    symbol.type = 'number'; //change type from decimal to number
                 }
-
+                this.currentNumber = symbol;
+                this.inputSeq.push(this.currentNumber);
             }
-            //update number
-            this.inputSeq[this.inputSeq.length - 1] = this.currentNumber;
-        }
+            //if the number continues append values to the symbol object in the input sequence
+            else {
+                if (symbol.type === 'number') {
+                    //skip more than 1 starting zero in a current number
+                    if (this.currentNumber.val.length === 1 && this.currentNumber.val[0] === '0' && symbol.val === '0') {
+                        console.log("already has leading zero")
+                    } else {
+                        this.currentNumber.val += symbol.val;
+                    }
+                }
+                if (symbol.type === 'decimal') {
+                    this.inNumber = true;
+                    //skip if more than one decimal
+                    if (!this.hasDecimal) {
+                        this.currentNumber.val += symbol.val;
+                        this.hasDecimal = true;
+                    }
 
-    }
-    console.log('OUTPUT')
-    console.log(this.inputSeq);
-    return this.inputSeq[this.inputSeq.length - 1];
+                }
+                //update number
+                this.inputSeq[this.inputSeq.length - 1] = this.currentNumber;
+            }
+
+        }
+        return this.inputSeq[this.inputSeq.length - 1];
 
     }
 
     getExpression(){
         let lastIndex = this.inputSeq.length;
-        // if(this.inNumber){
-        //     lastIndex = lastIndex - 1;
-        // }
-        lastIndex = lastIndex - 1;
         return this.inputSeq.slice(0, lastIndex).map((symbol) => symbol.val ).join('');
     }
 
@@ -202,10 +216,6 @@ class InputParser {
 
     reset(){
         this.inputSeq = []
-        this.inNumber = false;
-        this.hasDecimal = false;
-        this.hasMinus = false;
-        this.currentNumber = undefined;
         this.isSet = false;
     }
 
@@ -235,72 +245,52 @@ class Button extends React.Component {
 
 }
 
+class History extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.handleResultClick= this.handleResultClick.bind(this);
+    }
+
+    handleResultClick(result){
+        this.props.setValueFunc(result);
+    }
+
+    render() {
+        let items = this.props.items;
+        return ( 
+            <ol>
+            {items.map((value, index) => {return <li key = {`item${index}`}> {value.expression} <span onClick = {() => this.handleResultClick(value.result)}>{value.result.toString()}</span> </li>})}
+            </ol>
+            )
+    }
+
+}
+
 class Calc extends React.Component {
 
     constructor(props) {
         super(props);
-        // this.state = {
-        //     input: ''
-        //     //inputDiv: undefined
-        // };
+        this.state = {history : [], currentItem: 0, currentExpr: ''};
         
         this.ops = new Stack();
         this.values = new Stack();
 
         this.parser = new InputParser();
+        this.result = 0;
 
         this.execute = this.execute.bind(this);
         this.getInput = this.getInput.bind(this);
         this.reset = this.reset.bind(this);
-        this.updateDisplay = this.updateDisplay.bind(this);
         this.registerInput= this.registerInput.bind(this);
+        this.calcOp= this.calcOp.bind(this);
+        this.saveToHistory= this.saveToHistory.bind(this);
+        this.setFirstInputValue = this.setFirstInputValue.bind(this);
         
     }
 
     componentDidMount(){
-        //this.setState({inputDiv: document.getElementById("input")});
-        this.inputDiv = document.getElementById("input");
         this.memoryDiv = document.getElementById("memory");
-        console.log( this.inputDiv )
-    }
-
-    isOperation(val){
-        if (['+', '-', '*', '/', '('].includes(val)) {
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    isNumber(i){
-        let val = this.input[i]
-        let isStart = (i === 0) || (i > 0 && this.input[i-1] === '(')
-        let isNumeric = !isNaN(val) ;
-        let isDecimal = ( val === '.');
-        let isMinus = (val === '-');
-        let nextIsBracket = (i + 1 < this.input.length ) && (this.input[i+1] === '(');
-
-        if (isNumeric || isDecimal || (isMinus && !nextIsBracket && (isStart || (!isStart && this.isOperation(this.input[i-1]) ) ) )) {
-            return true;
-        }
-        else{
-            return false
-        }
-    }
-
-    isUniMinus(i){
-        let val = this.input[i];
-        let isMinus = (val === '-'); 
-        if(i === 0 && isMinus) {
-            return true;
-        }
-        if(i > 0  &&  isMinus && this.isOperation(this.input[i-1])) {
-            return true;
-        }
-        else{
-             return false;
-        }
     }
 
     getInput() {
@@ -308,124 +298,104 @@ class Calc extends React.Component {
         this.ops = new Stack();
         this.values = new Stack();
     }
-
-    reset() {
-        this.inputDiv.innerHTML = '';
-        this.memoryDiv.innerHTML = '';
-        this.parser.reset();
+    
+    saveToHistory(expr, result){
+        let item = {'expression': expr, 'result' :result};
+        this.setState({history: [...this.state.history, item]});
     }
 
-    updateDisplay(exp, append = true){
-        if (append) this.inputDiv.innerHTML += exp;
-        else this.inputDiv.innerHTML = exp;
+    reset() {
+        this.setState({currentItem : 0, currentExpr: ''});
+        this.memoryDiv.innerHTML = '';
+        this.parser.reset();
+        this.ops = new Stack();
+        this.values = new Stack();
+    }
+
+    setFirstInputValue(val, expr){
+        this.parser.setInputSeq({val: val, type: 'number'});
+        this.setState({currentItem: val});
+        if(expr){
+            this.setState({currentExpr: expr});
+        }
     }
 
     registerInput(symbol){
         let currentSymbol = this.parser.parse(symbol);
-        console.log(this.parser.getExpression());
         this.memoryDiv.innerHTML = this.parser.getExpression();
         if(symbol.type === 'equals'){
-            let result = this.execute()
-            this.parser.setInputSeq({val: result, type: 'number'});
+            let result = this.execute();
+            this.setFirstInputValue(result);
+            //save result
+            console.log(this.state.history);
+
             return;
         }
         else if(currentSymbol){
-            this.updateDisplay(currentSymbol.val, false);
+            this.setState({currentItem: currentSymbol.val});
         }
     }
 
+    calcOp(){
+        let val2 = this.values.pop();
+        let op = this.ops.pop();
+        let val1 = op.unary ? undefined : this.values.pop();
+        this.values.push(op.apply(val1, val2));
+    }
 
     execute() {
-        this.getInput();
-
-        let input = this.input
-        console.log('INPUT', input);
+        //don't take '=' symbol at the end
+        let input = this.parser.inputSeq.slice( 0 , this.parser.inputSeq.length - 1);
+        console.log(input);
 
         for (let i = 0; i < input.length; i++) {
-            
-            //if space - skip
-            if (input[i] === ' ') continue;
-
+            console.log('element >', input[i]);
             //if left bracket - push
-            if(input[i] === '('){
-                this.ops.push(new Operation(input[i]));
-            }
-            else {
+            if (input[i].val === '(') {
+                this.ops.push(new Operation(input[i].val));
+            } else {
                 //if number
-                if (this.isNumber(i)) {
-                    let value = '';
-                    while (i < input.length && this.isNumber(i))
-                    {
-                        value += input[i];
-                        i++;
-                    }
-                    this.values.push(+value);
-                    i--;
+                if (input[i].type === 'number') {
+                    this.values.push(+input[i].val);
                 } else
-                if (input[i] === ')')
-                {
-                    console.log("BRACKET1");
-                    while(!this.ops.isEmpty() && this.ops.peek().operation !== '(')
-                    {
-                        let val2 = this.values.pop();
-                        let val1 = this.values.pop();
-                        let op = this.ops.pop();
-                        console.log(val2,val1, op.operation);
-                        this.values.push(op.apply(val1, val2));
-                        console.log(val2,val1, op.operation);
+                if (input[i].val === ')') {
+                    while (!this.ops.isEmpty() && this.ops.peek().operation !== '(') {
+                        this.calcOp();
                     }
-                     
                     // pop opening brace.
-                    if(!this.ops.isEmpty()) this.ops.pop();
-                    console.log("BRACKET2");
-                    console.log('values after brackets', this.values.print());
-                    console.log('operations after brackets', this.ops.print());
-                }
-                    else {
+                    if (!this.ops.isEmpty()) this.ops.pop();
+                } else {
                     //if operation
                     let curOp;
-                    if(this.isUniMinus(i)) {
-                        curOp = new Operation(input[i], true);
-                    }
-                    else{
-                        curOp = new Operation(input[i]);
+                    if (input[i].unary) {
+                        curOp = new Operation(input[i].val, true);
+                    } else {
+                        curOp = new Operation(input[i].val);
                     }
                     //Apply pending operations
-                    console.log('current', curOp.operation);
                     while (!this.ops.isEmpty() && this.ops.peek().priority() >= curOp.priority()) {
-                        let val2 = this.values.pop();
-                        let val1 = this.values.pop();
-                        let op = this.ops.pop();
-                        console.log(val2,val1, op.operation);
-                        this.values.push(op.apply(val1, val2));
+                        this.calcOp();
                     }
 
                     // Push current operation to  the stack
                     this.ops.push(curOp);
-                    console.log('operations', this.ops.print());
 
                 }
             }
         }
 
-        console.log('Finish up')
-        console.log(this.values.print());
-        console.log(this.ops.print());
-        
         //expression parsed calculate remaining operations
-
         while (!this.ops.isEmpty()) {
-            let val2 = this.values.pop();
-            let val1 = this.values.pop();
-            let op = this.ops.pop();
-
-            console.log(val2,val1, op.operation);
-            this.values.push(op.apply(val1, val2));
+            this.calcOp();
         }
+        
+        let result = this.values.peek()
 
-        console.log('result', this.values.print());
-        this.updateDisplay(this.values.peek().toString(), false);
-        return this.values.peek();
+        this.saveToHistory(this.parser.getExpression(), result);
+        this.setState({currentItem: result});
+    
+
+        return result;
     }
 
 
@@ -433,19 +403,22 @@ class Calc extends React.Component {
         const numbers = [...Array(9).keys()]
         const operations = {'plus':'+', 'minus':'-', 'mult': '*', 'divide': '/'}
         return ( <div id = 'calc' >
-            <div id = 'memory' contentEditable></div> 
-            <div id = 'input' contentEditable></div> 
+            <div id = 'memory'></div> 
+            <div id = 'input'>{this.state.currentItem}</div> 
             <div id='pads'>
             {numbers.map((value) => {
-                return <Button key = {value.toString()} label ={value.toString()}  type='number' update = {this.updateDisplay} register = {this.registerInput}/>
+                return <Button key = {value.toString()} label ={value.toString()}  type='number' register = {this.registerInput}/>
             })}
             {Object.keys(operations).map((key, index) => {
-                return <Button key = {key.toString()} label={operations[key].toString()}  type='operation' update = {this.updateDisplay} register = {this.registerInput}/>
+                return <Button key = {key.toString()} label={operations[key].toString()}  type='operation' register = {this.registerInput}/>
             })}
-             <Button key = 'decimal' label='.'  type='decimal' update = {this.updateDisplay} register = {this.registerInput}/>
-             <Button key = 'equals' label='='  type='equals' update = {this.updateDisplay} register = {this.registerInput}/>
-             <Button key = 'clear' label='C'  type='clear' update = {this.updateDisplay} register = {this.reset}/>
+            <Button key = 'lbracket' label='('  type='bracket' register = {this.registerInput}/>
+            <Button key = 'rbracket' label=')'  type='bracket' register = {this.registerInput}/>
+            <Button key = 'decimal' label='.'  type='decimal' register = {this.registerInput}/>
+            <Button key = 'equals' label='='  type='equals' register = {this.registerInput}/>
+            <Button key = 'clear' label='C'  type='clear' register = {this.reset}/>
             </div>
+            <History items = {this.state.history} setValueFunc = {this.setFirstInputValue}/>
             </div>)
     }
 
