@@ -1,0 +1,29 @@
+.pads{
+    display: flex;
+    flex-direction: row;
+    width: 33%;
+    margin: 0 auto;
+    justify-content: space-between;
+}
+
+
+.pads--numbers{
+    border: solid 1px red;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.pads--operations{
+    border: solid 1px red;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+button{
+    height: 3rem;
+    width: 3rem;
+}
+
+#zero{
+    width: 6rem;
+}

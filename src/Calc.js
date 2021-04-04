@@ -251,7 +251,7 @@ class Button extends React.Component {
 
     render() {
         return ( 
-            <button id = {this.props.id} onClick = {this.handleClick} > {this.props.label}</button>)
+            <button id = {this.props.id} className={this.props.type}  onClick = {this.handleClick} > {this.props.label}</button>)
     }
 
 }
@@ -270,7 +270,7 @@ class History extends React.Component {
     render() {
         let items = this.props.items;
         return ( 
-            <ol className="history">
+            <ol id="history">
             {items.map((value, index) => {return <li key = {`item${index}`}> {value.expression} <span onClick = {() => this.handleResultClick(value.result, value.expression)}>{value.result.toString()}</span> </li>})}
             </ol>
             )
@@ -418,21 +418,28 @@ class Calc extends React.Component {
     render() {
         const numbers = {"zero": 0, "one": 1, "two": 2, "three":3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9}
         const operations = {'add':'+', 'substract':'-', 'multiply': '*', 'divide': '/'}
-        return ( <div id = 'calc' >
+        return ( <div id = 'container' >
+            <div id = 'calc'>
             <div id = 'expression'>{this.state.currentExpr}</div> 
             <div id = 'display'>{this.state.currentItem}</div> 
-            <div id='pads'>
+            <div className='pads'>
+            <div className='pads--numbers'>
+            <Button key = 'decimal' label='.'  type='decimal' register = {this.registerInput}/>
             {Object.keys(numbers).map((key, index) => {
                 return <Button key = {key.toString()} id = {key.toString()} label ={numbers[key].toString()}  type='number' register = {this.registerInput}/>
             })}
+            </div>
+            <div className='pads--operations'>
             {Object.keys(operations).map((key, index) => {
                 return <Button key = {key.toString()} id = {key.toString()} label={operations[key].toString()}  type='operation' register = {this.registerInput}/>
             })}
             <Button key = 'lbracket' label='('  type='bracket' register = {this.registerInput}/>
             <Button key = 'rbracket' label=')'  type='bracket' register = {this.registerInput}/>
-            <Button key = 'decimal' label='.'  type='decimal' register = {this.registerInput}/>
+            
             <Button key = 'equals' label='='  type='equals' register = {this.registerInput}/>
             <Button key = 'clear' label='C'  type='clear' register = {this.reset}/>
+            </div>
+            </div>
             </div>
             <History items = {this.state.history} setValueFunc = {this.setFirstInputValue}/>
             </div>)
