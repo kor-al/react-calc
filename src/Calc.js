@@ -118,6 +118,7 @@ class InputParser {
                 //remove operations at the end
                 while (this.inputSeq.length && prevSymbol.type === 'operation') {
                     this.inputSeq.pop();
+                    prevSymbol = this.inputSeq[this.inputSeq.length - 1];
                 }
                 //add bracket if needed
                 if (this.bracketOpen) {
