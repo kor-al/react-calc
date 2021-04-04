@@ -113,29 +113,35 @@ class InputParser {
         let prevSymbol = this.inputSeq[this.inputSeq.length - 1];
 
         if (symbol.type === 'equals') {
-            //remove operations at the end
-            while (this.inputSeq.length && prevSymbol.type === 'operation') {
-                this.inputSeq.pop();
+            // "=" can be clicked only if some input was provided AND input should not be a previous result
+            if (this.inputSeq.length) {
+                //remove operations at the end
+                while (this.inputSeq.length && prevSymbol.type === 'operation') {
+                    this.inputSeq.pop();
+                }
+                //add bracket if needed
+                if (this.bracketOpen) {
+                    this.inputSeq.push({
+                        type: 'bracket',
+                        val: ')'
+                    });
+                }
+                //push '=' at the end
+                this.inputSeq.push(symbol);
             }
-            //add bracket if needed
-            if(this.bracketOpen){
-                this.inputSeq.push({type: 'bracket', val: ')'});
-            }
-            //push '=' at the end
-            this.inputSeq.push(symbol);
         }
-        if (symbol.val === '('){
-            if(this.inputSeq.length === 0 || (this.inputSeq.length && prevSymbol.type === 'operation')) {
-            this.bracketOpen = true;
-            this.inputSeq.push(symbol);
+        if (symbol.val === '(') {
+            if (this.inputSeq.length === 0 || (this.inputSeq.length && prevSymbol.type === 'operation')) {
+                this.bracketOpen = true;
+                this.inputSeq.push(symbol);
             }
         }
-        if (symbol.val === ')'){
-        if(this.bracketOpen &&  prevSymbol.val !== '('  && prevSymbol.type !== 'operation') {
-        this.bracketOpen = false;
-        this.inputSeq.push(symbol);
+        if (symbol.val === ')') {
+            if (this.bracketOpen && prevSymbol.val !== '(' && prevSymbol.type !== 'operation') {
+                this.bracketOpen = false;
+                this.inputSeq.push(symbol);
+            }
         }
-    }
         if (symbol.type === 'operation') {
             //number ended - reset variables
             this.inNumber = false;
@@ -307,21 +313,30 @@ class Calc extends React.Component {
         }
     }
 
-    registerInput(symbol){
+    registerInput(symbol) {
         let currentSymbol = this.parser.parse(symbol);
-        this.setState({currentExpr : this.parser.getExpression() });
-        if(symbol.type === 'equals'){
+        this.setState({
+            currentExpr: this.parser.getExpression()
+        });
+        if (symbol.type === 'equals') {
             let result = this.execute();
-            //save expr and result to the history
-            this.saveToHistory(this.parser.getExpression(), result);
-            //update state
-            this.setState({currentItem: result});
+            //check if result was calculated
+            if (result) {
+                console.log(result);
+                //save expr and result to the history
+                this.saveToHistory(this.parser.getExpression(), result);
+                //update state
+                this.setState({
+                    currentItem: result
+                });
 
-            //use result as a possible start fot the next expression
-            this.setFirstInputValue(result);
-        }
-        else if(currentSymbol){
-            this.setState({currentItem: currentSymbol.val});
+                //use result as a possible start fot the next expression
+                this.setFirstInputValue(result);
+            }
+        } else if (currentSymbol) {
+            this.setState({
+                currentItem: currentSymbol.val
+            });
         }
     }
 
