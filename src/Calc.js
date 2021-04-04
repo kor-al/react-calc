@@ -19,7 +19,6 @@ class Stack {
 
     pop() {
         //return the top element of the stack and remove it from the stack
-        console.log('Stack: pop', this.stack[this.stack.length - 1])
         if (this.stack.length === 0) return undefined;
         return this.stack.pop();
     }
@@ -90,16 +89,25 @@ class Operation {
 class InputParser {
 
     constructor() {
-        this.inputSeq = []
-        this.inNumber = false;
-        this.hasDecimal = false;
-        this.hasMinus = false;
+        this.reset();
         this.currentNumber = undefined;
-        this.isSet = false;
-        this.bracketOpen = false;
-        this.setInputSeq = this.setInputSeq.bind(this);
     }
 
+    //reset parser
+    //use provided number as a start of the expression
+    reset(startNumber = undefined) {
+        if (startNumber) {
+            //set first number in the operation with the result of the last expression
+            this.inputSeq = [startNumber];
+            this.numberIsLastResult = true;
+        } else {
+            this.inputSeq = []
+            this.numberIsLastResult = false;
+        }
+        this.inNumber = false;
+        this.hasDecimal = false;
+        this.bracketOpen = false;
+    }
 
     parse(symbol) {
         let prevSymbol = this.inputSeq[this.inputSeq.length - 1];
@@ -113,6 +121,7 @@ class InputParser {
             if(this.bracketOpen){
                 this.inputSeq.push({type: 'bracket', val: ')'});
             }
+            //push '=' at the end
             this.inputSeq.push(symbol);
         }
         if (symbol.val === '('){
@@ -132,8 +141,8 @@ class InputParser {
             this.inNumber = false;
             this.hasDecimal = false;
             //work with the previous result as if it was manually typed
-            if (this.isSet) {
-                this.isSet = false;
+            if (this.numberIsLastResult) {
+                this.numberIsLastResult = false;
             }
             //identify unary operations
             if (symbol.val === '-' && (this.inputSeq.length === 0 || (this.inputSeq.length && prevSymbol.type !== 'number'))) {
@@ -158,10 +167,10 @@ class InputParser {
 
         }
         if (symbol.type === 'number' || symbol.type === 'decimal') {
-            //remove last result
-            if (this.isSet) {
+            //remove last result if new value in entered instead
+            if (this.numberIsLastResult) {
                 this.inputSeq = []
-                this.isSet = false;
+                this.numberIsLastResult = false;
             }
             //if it's the first symbol in a number
             if (!this.inNumber) {
@@ -192,7 +201,6 @@ class InputParser {
                         this.currentNumber.val += symbol.val;
                         this.hasDecimal = true;
                     }
-
                 }
                 //update number
                 this.inputSeq[this.inputSeq.length - 1] = this.currentNumber;
@@ -203,20 +211,9 @@ class InputParser {
 
     }
 
+    // get expression in a string  e.g. "x{operation}y="
     getExpression(){
-        let lastIndex = this.inputSeq.length;
-        return this.inputSeq.slice(0, lastIndex).map((symbol) => symbol.val ).join('');
-    }
-
-    setInputSeq(symbol){
-        this.inputSeq = [symbol];
-        this.isSet = true;
-        this.inNumber = false; // number ended
-    }
-
-    reset(){
-        this.inputSeq = []
-        this.isSet = false;
+        return this.inputSeq.map((symbol) => symbol.val ).join('');
     }
 
 
@@ -231,9 +228,11 @@ class Button extends React.Component {
 
     handleClick(){
         if(this.props.type === 'clear'){
+            //reset parser and calc
             this.props.register();
         }
         else{
+            //parse new symbol in an expression
             this.props.register({val: this.props.label, type: this.props.type});
         }        
     }
@@ -259,7 +258,7 @@ class History extends React.Component {
     render() {
         let items = this.props.items;
         return ( 
-            <ol>
+            <ol className="history">
             {items.map((value, index) => {return <li key = {`item${index}`}> {value.expression} <span onClick = {() => this.handleResultClick(value.result, value.expression)}>{value.result.toString()}</span> </li>})}
             </ol>
             )
@@ -280,23 +279,12 @@ class Calc extends React.Component {
         this.result = 0;
 
         this.execute = this.execute.bind(this);
-        this.getInput = this.getInput.bind(this);
         this.reset = this.reset.bind(this);
         this.registerInput= this.registerInput.bind(this);
         this.calcOp= this.calcOp.bind(this);
         this.saveToHistory= this.saveToHistory.bind(this);
         this.setFirstInputValue = this.setFirstInputValue.bind(this);
         
-    }
-
-    componentDidMount(){
-        this.memoryDiv = document.getElementById("memory");
-    }
-
-    getInput() {
-        this.input = this.state.currentExpr;// this.memoryDiv.innerText.replaceAll(' ', '');
-        this.ops = new Stack();
-        this.values = new Stack();
     }
     
     saveToHistory(expr, result){
@@ -312,7 +300,7 @@ class Calc extends React.Component {
     }
 
     setFirstInputValue(val, expr){
-        this.parser.setInputSeq({val: val, type: 'number'});
+        this.parser.reset({val: val, type: 'number'});
         this.setState({currentItem: val});
         if(expr){
             this.setState({currentExpr: expr});
@@ -321,15 +309,16 @@ class Calc extends React.Component {
 
     registerInput(symbol){
         let currentSymbol = this.parser.parse(symbol);
-        //his.memoryDiv.innerHTML = this.parser.getExpression();
         this.setState({currentExpr : this.parser.getExpression() });
         if(symbol.type === 'equals'){
             let result = this.execute();
-            this.setFirstInputValue(result);
-            //save result
-            console.log(this.state.history);
+            //save expr and result to the history
+            this.saveToHistory(this.parser.getExpression(), result);
+            //update state
+            this.setState({currentItem: result});
 
-            return;
+            //use result as a possible start fot the next expression
+            this.setFirstInputValue(result);
         }
         else if(currentSymbol){
             this.setState({currentItem: currentSymbol.val});
@@ -344,13 +333,14 @@ class Calc extends React.Component {
     }
 
     execute() {
-        //don't take '=' symbol at the end
+        //input is stored in the parser's array  this.parser.inputSeq
+        //but the last item there is "="
+        //don't take '=' symbol at the end - use slice
         let input = this.parser.inputSeq.slice( 0 , this.parser.inputSeq.length - 1);
         console.log(input);
 
         for (let i = 0; i < input.length; i++) {
-            console.log('element >', input[i]);
-            //if left bracket - push
+            //if left bracket - just push it
             if (input[i].val === '(') {
                 this.ops.push(new Operation(input[i].val));
             } else {
@@ -358,11 +348,13 @@ class Calc extends React.Component {
                 if (input[i].type === 'number') {
                     this.values.push(+input[i].val);
                 } else
+                //if brackets are closed, then it's time to calculate operations in these brackets 
+                //apply operations while the opening bracket is not the top most operation
                 if (input[i].val === ')') {
                     while (!this.ops.isEmpty() && this.ops.peek().operation !== '(') {
                         this.calcOp();
                     }
-                    // pop opening brace.
+                    // then pop the opening brace.
                     if (!this.ops.isEmpty()) this.ops.pop();
                 } else {
                     //if operation
@@ -384,17 +376,14 @@ class Calc extends React.Component {
             }
         }
 
-        //expression parsed calculate remaining operations
+        // expression parsed
+        // calculate remaining operations
         while (!this.ops.isEmpty()) {
             this.calcOp();
         }
         
         let result = this.values.peek()
-
-        this.saveToHistory(this.parser.getExpression(), result);
-        this.setState({currentItem: result});
-    
-
+        
         return result;
     }
 
