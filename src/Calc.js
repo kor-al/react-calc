@@ -110,11 +110,13 @@ class InputParser {
     }
 
     parse(symbol) {
+        //only expression ending with "=" can be executed later
+        //so use "=" to signify correctness of the expression
         let prevSymbol = this.inputSeq[this.inputSeq.length - 1];
 
         if (symbol.type === 'equals') {
             // "=" can be clicked only if some input was provided AND input should not be a previous result
-            if (this.inputSeq.length) {
+            if (this.inputSeq.length && !this.numberIsLastResult) {
                 //remove operations at the end
                 while (this.inputSeq.length && prevSymbol.type === 'operation') {
                     this.inputSeq.pop();
@@ -129,6 +131,9 @@ class InputParser {
                 }
                 //push '=' at the end
                 this.inputSeq.push(symbol);
+            }
+            else{
+                return undefined;  //do not update 
             }
         }
         if (symbol.val === '(') {
@@ -316,9 +321,11 @@ class Calc extends React.Component {
 
     registerInput(symbol) {
         let currentSymbol = this.parser.parse(symbol);
-        this.setState({
-            currentExpr: this.parser.getExpression()
-        });
+        if (currentSymbol) {
+            this.setState({
+                currentExpr: this.parser.getExpression()
+            });
+        }
         if (symbol.type === 'equals') {
             let result = this.execute();
             //check if result was calculated
@@ -350,10 +357,14 @@ class Calc extends React.Component {
 
     execute() {
         //input is stored in the parser's array  this.parser.inputSeq
-        //but the last item there is "="
+        //check if expression ends with =
+        if(this.parser.inputSeq.length  && this.parser.inputSeq[this.parser.inputSeq.length - 1].val !== '='){
+            return undefined;
+        }
+        console.log('INPUT', this.parser.getExpression());
         //don't take '=' symbol at the end - use slice
         let input = this.parser.inputSeq.slice( 0 , this.parser.inputSeq.length - 1);
-        console.log(input);
+        console.log('INPUT', input);
 
         for (let i = 0; i < input.length; i++) {
             //if left bracket - just push it
@@ -405,17 +416,17 @@ class Calc extends React.Component {
 
 
     render() {
-        const numbers = [...Array(9).keys()]
-        const operations = {'plus':'+', 'minus':'-', 'mult': '*', 'divide': '/'}
+        const numbers = {"zero": 0, "one": 1, "two": 2, "three":3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9}
+        const operations = {'add':'+', 'substract':'-', 'multiply': '*', 'divide': '/'}
         return ( <div id = 'calc' >
-            <div id = 'memory'>{this.state.currentExpr}</div> 
-            <div id = 'input'>{this.state.currentItem}</div> 
+            <div id = 'expression'>{this.state.currentExpr}</div> 
+            <div id = 'display'>{this.state.currentItem}</div> 
             <div id='pads'>
-            {numbers.map((value) => {
-                return <Button key = {value.toString()} label ={value.toString()}  type='number' register = {this.registerInput}/>
+            {Object.keys(numbers).map((key, index) => {
+                return <Button key = {key.toString()} id = {key.toString()} label ={numbers[key].toString()}  type='number' register = {this.registerInput}/>
             })}
             {Object.keys(operations).map((key, index) => {
-                return <Button key = {key.toString()} label={operations[key].toString()}  type='operation' register = {this.registerInput}/>
+                return <Button key = {key.toString()} id = {key.toString()} label={operations[key].toString()}  type='operation' register = {this.registerInput}/>
             })}
             <Button key = 'lbracket' label='('  type='bracket' register = {this.registerInput}/>
             <Button key = 'rbracket' label=')'  type='bracket' register = {this.registerInput}/>
