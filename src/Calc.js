@@ -309,8 +309,11 @@ class Calc extends React.Component {
         var navHist = document.querySelector(".nav__history");
         var pads = document.querySelector(".pads");
         var history = document.querySelector(".history");
+        navCalc.classList.add('active--link');
 
         navCalc.addEventListener("click", (e) => {
+            navCalc.classList.toggle('active--link');
+            navHist.classList.toggle('active--link');
             if (pads.classList.contains("active--left")) {
                 pads.classList.remove("active--left");
             }
@@ -320,7 +323,8 @@ class Calc extends React.Component {
         });
 
         navHist.addEventListener("click", (e) => {
-
+            navHist.classList.toggle('active--link');
+            navCalc.classList.toggle('active--link');
             if (!pads.classList.contains("active--left")) {
                 pads.classList.add("active--left");
             }

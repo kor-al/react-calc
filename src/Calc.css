@@ -115,6 +115,10 @@ button:hover {
   padding-right: 0.5rem;
 }
 
+.nav .active--link {
+  color: #8c2f39;
+}
+
 .interface {
   position: relative;
 }

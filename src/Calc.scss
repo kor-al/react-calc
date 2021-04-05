@@ -92,6 +92,10 @@ button:hover{
     &__history{
         padding-right: 0.5rem;
     }
+
+    .active--link{
+        color: #8c2f39;
+    }
 }
 
 .interface{
