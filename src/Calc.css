@@ -1,3 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@300;400;600&display=swap");
+#calc {
+  max-width: 400px;
+  width: 90%;
+  overflow: hidden;
+  font-family: 'Quicksand', sans-serif;
+  background-color: #364156;
+  color: #c3d6f7;
+  text-align: right;
+}
+
 .pads {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -6,15 +17,19 @@
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
           flex-direction: row;
-  width: 33%;
+  width: 100%;
   margin: 0 auto;
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
 }
 
 .pads--numbers {
-  border: solid 1px red;
+  -webkit-box-flex: 2;
+      -ms-flex: 2;
+          flex: 2;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -23,7 +38,9 @@
 }
 
 .pads--operations {
-  border: solid 1px red;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -32,11 +49,98 @@
 }
 
 button {
-  height: 3rem;
-  width: 3rem;
+  background-color: #364156;
+  border: 1px solid #212d40;
+  color: #c3d6f7;
+  font-size: 1.5rem;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 300;
+  padding: 0.5em;
+}
+
+button:hover {
+  background-color: #556789;
+  cursor: pointer;
+}
+
+.pads--numbers > button {
+  width: 33.33%;
+}
+
+.pads--operations > button {
+  background-color: #8c2f39;
+  width: 50%;
+}
+
+#clear {
+  background-color: #364156;
 }
 
 #zero {
-  width: 6rem;
+  width: 66.66%;
+}
+
+#output {
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+#display {
+  font-size: 1.8rem;
+}
+
+#expression {
+  font-size: 0.8rem;
+  height: 1em;
+  color: #7f91b1;
+  word-wrap: break-word;
+}
+
+.nav {
+  color: #7f91b1;
+  font-size: 0.8rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.nav__calc {
+  padding-left: 0.5rem;
+}
+
+.nav__history {
+  padding-right: 0.5rem;
+}
+
+.interface {
+  position: relative;
+}
+
+.history {
+  position: absolute;
+  width: 100%;
+  background-color: #364156;
+  color: #c3d6f7;
+  top: 0;
+  left: 100%;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
+}
+
+.historyItem {
+  padding: 0.5rem;
+}
+
+.historyItem:hover {
+  background-color: #556789;
+  cursor: pointer;
+}
+
+.active--left {
+  -webkit-transform: translateX(-100%);
+          transform: translateX(-100%);
 }
 /*# sourceMappingURL=Calc.css.map */

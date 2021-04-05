@@ -109,6 +109,7 @@ class InputParser {
         this.bracketOpen = false;
     }
 
+
     parse(symbol) {
         //only expression ending with "=" can be executed later
         //so use "=" to signify correctness of the expression
@@ -268,10 +269,15 @@ class History extends React.Component {
     }
 
     render() {
-        let items = this.props.items;
+        let items = this.props.items.reverse();
         return ( 
-            <ol id="history">
-            {items.map((value, index) => {return <li key = {`item${index}`}> {value.expression} <span onClick = {() => this.handleResultClick(value.result, value.expression)}>{value.result.toString()}</span> </li>})}
+            <ol className="history">
+            {items.map((value, index) => {
+                return (
+                <li key = {`item${index}`} className='historyItem'  onClick = {() => this.handleResultClick(value.result, value.expression)}>
+                {value.expression}<span className='expressionResult'>{value.result.toString()}</span> 
+                </li>)
+            })}
             </ol>
             )
     }
@@ -297,6 +303,32 @@ class Calc extends React.Component {
         this.saveToHistory= this.saveToHistory.bind(this);
         this.setFirstInputValue = this.setFirstInputValue.bind(this);
         
+    }
+    componentDidMount() {
+        var navCalc = document.querySelector(".nav__calc");
+        var navHist = document.querySelector(".nav__history");
+        var pads = document.querySelector(".pads");
+        var history = document.querySelector(".history");
+
+        navCalc.addEventListener("click", (e) => {
+            if (pads.classList.contains("active--left")) {
+                pads.classList.remove("active--left");
+            }
+            if (history.classList.contains("active--left")) {
+                history.classList.remove("active--left");
+            }
+        });
+
+        navHist.addEventListener("click", (e) => {
+
+            if (!pads.classList.contains("active--left")) {
+                pads.classList.add("active--left");
+            }
+
+            if (!history.classList.contains("active--left")) {
+                history.classList.add("active--left");
+            }
+        });
     }
     
     saveToHistory(expr, result){
@@ -328,9 +360,9 @@ class Calc extends React.Component {
         }
         if (symbol.type === 'equals') {
             let result = this.execute();
+            console.log('result',result);
             //check if result was calculated
-            if (result) {
-                console.log(result);
+            if (result!==undefined) {
                 //save expr and result to the history
                 this.saveToHistory(this.parser.getExpression(), result);
                 //update state
@@ -410,6 +442,7 @@ class Calc extends React.Component {
         }
         
         let result = this.values.peek()
+        result = Math.round(result * 1000) / 1000;
         
         return result;
     }
@@ -418,10 +451,14 @@ class Calc extends React.Component {
     render() {
         const numbers = {"zero": 0, "one": 1, "two": 2, "three":3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9}
         const operations = {'add':'+', 'substract':'-', 'multiply': '*', 'divide': '/'}
-        return ( <div id = 'container' >
+        return (
             <div id = 'calc'>
+                <div id="output">
             <div id = 'expression'>{this.state.currentExpr}</div> 
             <div id = 'display'>{this.state.currentItem}</div> 
+            </div>
+            <nav className="nav"><span className='nav__calc'>Calculator</span><span className='nav__history'>History</span></nav>
+            <div className='interface'>
             <div className='pads'>
             <div className='pads--numbers'>
             <Button key = 'decimal' label='.'  type='decimal' register = {this.registerInput}/>
@@ -437,11 +474,11 @@ class Calc extends React.Component {
             <Button key = 'rbracket' label=')'  type='bracket' register = {this.registerInput}/>
             
             <Button key = 'equals' label='='  type='equals' register = {this.registerInput}/>
-            <Button key = 'clear' label='C'  type='clear' register = {this.reset}/>
-            </div>
+            <Button key = 'C' label='C' id='clear'  type='clear' register = {this.reset}/>
             </div>
             </div>
             <History items = {this.state.history} setValueFunc = {this.setFirstInputValue}/>
+            </div>
             </div>)
     }
 
