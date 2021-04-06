@@ -107,8 +107,10 @@ button:active::before {
   -webkit-clip-path: circle(30%);
           clip-path: circle(30%);
   opacity: 1;
-  -webkit-animation: highlight-button 300ms ease-in-out;
-          animation: highlight-button 300ms ease-in-out;
+  -webkit-animation: highlight-button 100ms ease-in-out;
+          animation: highlight-button 100ms ease-in-out;
+  -webkit-transition: all 100s ease-in-out;
+  transition: all 100s ease-in-out;
 }
 
 @media (hover: hover) and (pointer: fine) {

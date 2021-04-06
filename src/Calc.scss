@@ -94,7 +94,8 @@ button {
         &::before {
             clip-path: circle(30%);
             opacity: 1;
-            animation: highlight-button 300ms ease-in-out;
+            animation: highlight-button 100ms ease-in-out;
+            transition: all 100s ease-in-out;
         }
     }
 
