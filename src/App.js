@@ -1,5 +1,4 @@
 
-import './App.css';
 import './Calc.css';
 import Calc from './Calc';
 

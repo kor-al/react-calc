@@ -1,16 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@300;400;600&display=swap');
+$text-color: #e8ddb5;
+$muted-text-color: #b2c9ab;
+$app-bg-color: #364958;
+$bg-color: rgba(0, 0, 0, 0);
+$hover-color: #5e8a85;
+$contrast-color: #ff9b54;
 
-#calc{
-    max-width: 400px;
-    width: 90%;
-    overflow:hidden;
-    font-family: 'Quicksand', sans-serif;
-    background-color: #364156;
-    color: #c3d6f7;
-    text-align: right;
+
+.App {
+    background-color: $app-bg-color;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
 }
 
-.pads{
+
+#container {
+    max-width: 400px;
+    width: 90%;
+    overflow: hidden;
+}
+
+
+#calc {
+    font-family: 'Quicksand', sans-serif;
+    background-color: $bg-color;
+    color: $text-color;
+    text-align: right;
+    position: relative;
+    z-index: 1;
+}
+
+
+.pads {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -19,108 +43,243 @@
     transition: all 300ms ease-in-out;
 }
 
+.interface {
+    position: relative;
+}
 
-.pads--numbers{
+.pads--numbers {
     flex: 2;
     display: flex;
     flex-wrap: wrap;
 }
 
-.pads--operations{
+.pads--operations {
     flex: 1;
     display: flex;
     flex-wrap: wrap;
 }
 
-button{
-    background-color: #364156;
-    border: 1px solid #212d40;
-    color: #c3d6f7;
+button {
+    position: relative;
+    background-color: $bg-color;
+    border: none;
+    color: $text-color;
     font-size: 1.5rem;
     font-family: 'Quicksand', sans-serif;
     font-weight: 300;
-    padding: 0.5em;;
+    padding: 0.8em;
+    transition: all 0.5s ease-in-out;
+
+    &::before {
+        content: '';
+        z-index: -1;
+        clip-path: circle(0% at 50% 50%);
+        transition: all 0.5s ease-in-out;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0.4;
+        background: $hover-color;
+
+    }
+
+    &:hover {
+        &::before {
+            clip-path: circle(30%);
+            opacity: 1;
+            cursor: pointer;
+        }
+    }
+
+    &:active {
+        &::before {
+            background: $contrast-color;
+        }
+    }
+
 }
 
-button:hover{
-    background-color: #556789;
-    cursor: pointer;
-}
-
-.pads--numbers > button{
+.pads--numbers>button {
     width: 33.33%;
+    color: $text-color;
 }
 
-.pads--operations > button{
-    background-color: #8c2f39;
+.pads--operations>button {
+    color: $contrast-color;
+    font-weight: 500;
     width: 50%;
 }
 
-#clear{
-    background-color: #364156;
+#clear {
+    color: $text-color;
 }
 
-#zero{
+#decimal {
+    color: $contrast-color;
+    font-weight: 700;
+}
+
+#zero {
     width: 66.66%;
+
+    &:hover {
+        &::before {
+            clip-path: circle(20%);
+        }
+    }
 }
 
-#output{
-    padding:0.5rem;
-    overflow:hidden;
+#output {
+    padding: 0.5rem;
+    overflow: hidden;
 }
 
-#display{
+#display {
     font-size: 1.8rem;
 }
 
-#expression{
+#expression {
     font-size: 0.8rem;
     height: 1em;
-    color: #7f91b1;
-    word-wrap:break-word;
+    color: $muted-text-color;
+    word-wrap: break-word;
 }
 
-.nav{
-    color: #7f91b1;
-    font-size:0.8rem;
+.nav {
+    color: $muted-text-color;
+    font-size: 0.8rem;
     display: flex;
     justify-content: space-between;
+    border-bottom: 3px solid $contrast-color;
 
-    &__calc{
+    &__calc {
         padding-left: 0.5rem;
+
+        &:hover {
+            cursor: pointer;
+        }
     }
-    &__history{
+
+    &__history {
         padding-right: 0.5rem;
+
+        &:hover {
+            cursor: pointer;
+        }
     }
 
-    .active--link{
-        color: #8c2f39;
+    .active--link {
+        color: $contrast-color;
+        font-weight: 500;
     }
 }
 
-.interface{
-    position:relative;
-}
-
-.history{
-    position:absolute;
+.history {
+    position: absolute;
     width: 100%;
-    background-color: #364156;
-    color: #c3d6f7;
-    top:0;
+    background-color: rgba(0, 0, 0, 0);
+    color: $text-color;
+    top: 0;
     left: 100%;
     transition: all 300ms ease-in-out;
+
+    .historyItem {
+        padding: 0.5rem;
+        border-radius: 73% 27% 100% 0% / 67% 80% 20% 33%;
+
+        &:hover {
+            background: linear-gradient(to right, $bg-color, $hover-color);
+            cursor: pointer;
+        }
+    }
 }
 
-.historyItem{
-    padding:0.5rem;
-}
-
-.historyItem:hover{
-    background-color: #556789;
-    cursor: pointer;
-}
-
-.active--left{
+.active--left {
     transform: translateX(-100%);
-  }
+}
+
+
+.blobs {
+    height: 100%;
+    width: 100%;
+
+
+    .blobsItem {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: 0;
+        overflow: hidden;
+
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        path {
+            fill: rgba($color: #000000, $alpha: 0.1);
+            position: relative;
+        }
+
+
+    }
+
+    $start: 0;
+    $max: 6;
+
+    $indices: "";
+
+    //create an array fron $start to $max
+    @for $i from $start+1 through $max {
+        $indices: append($indices, $i, comma);
+
+        $indices: set-nth($indices, 1, $start);
+    }
+
+    $factor: 1.01;
+    $curScale: 1.01;
+
+    @function pow($number, $exponent) {
+        $value: 1;
+
+        @if $exponent>0 {
+            @for $i from 1 through $exponent {
+                $value: $value * $number;
+            }
+        }
+
+        @else if $exponent < 0 {
+            @for $i from 1 through -$exponent {
+                $value: $value / $number;
+            }
+        }
+
+        @return $value;
+    }
+
+    @each $index in $indices {
+        $curScale: pow($curScale, $factor);
+
+        #blobSvg-#{$index} {
+            animation-name: blob-grow-#{$index};
+            animation-duration: 1s;
+            animation-timing-function: cubic-bezier(.93, -0.92, .23, 1.97);
+            animation-fill-mode: forwards
+        }
+
+        @keyframes blob-grow-#{$index} {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale($curScale)
+            }
+        }
+    }
+
+}

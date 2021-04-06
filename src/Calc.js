@@ -284,6 +284,21 @@ class History extends React.Component {
 
 }
 
+function Blobs(props){
+  return(
+        <ol className="blobs">
+        {props.items.reverse().slice(0, +Math.min(props.items.length, +props.maxBlobs)).map((value, index) => {
+            return (
+            <li key = {`blob-item${index}`} className='blobsItem'>
+            <svg id={`blobSvg-${index}`} xmlns="http://www.w3.org/2000/svg" height="400" width="400" viewBox="0 0 200 200">
+  <path d="M39.6,-47.2C51.9,-36.8,62.9,-24.9,65.1,-11.6C67.3,1.8,60.9,16.6,54.2,34.3C47.6,52,40.8,72.7,26.6,81.5C12.4,90.4,-9.2,87.5,-25.3,78C-41.4,68.5,-52.1,52.3,-57.5,36.4C-63,20.4,-63.2,4.6,-61.8,-12.1C-60.3,-28.9,-57.1,-46.6,-46.5,-57.2C-35.9,-67.8,-18,-71.4,-2.2,-68.8C13.6,-66.2,27.3,-57.5,39.6,-47.2Z" transform="translate(100,100)" />
+</svg>
+            </li>)
+        })}
+        </ol>
+  )
+}
+
 class Calc extends React.Component {
 
     constructor(props) {
@@ -453,37 +468,42 @@ class Calc extends React.Component {
 
 
     render() {
-        const numbers = {"zero": 0, "one": 1, "two": 2, "three":3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9}
-        const operations = {'add':'+', 'substract':'-', 'multiply': '*', 'divide': '/'}
+        const numbers = { "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9 }
+        const operations = { 'add': '+', 'substract': '-', 'multiply': '*', 'divide': '/' }
         return (
-            <div id = 'calc'>
-                <div id="output">
-            <div id = 'expression'>{this.state.currentExpr}</div> 
-            <div id = 'display'>{this.state.currentItem}</div> 
+            <div id='container'>
+                <div id='calc'>
+                    <div id="output">
+                        <div id='expression'>{this.state.currentExpr}</div>
+                        <div id='display'>{this.state.currentItem}</div>
+                    </div>
+                    <nav className="nav"><span className='nav__calc'>Calculator</span><span className='nav__history'>History</span></nav>
+                    <div className='interface'>
+                        <div className='pads'>
+                            <div className='pads--numbers'>
+                                <Button key='decimal'  id='decimal' label='.' type='decimal' register={this.registerInput} />
+                                {Object.keys(numbers).map((key, index) => {
+                                    return <Button key={key.toString()} id={key.toString()} label={numbers[key].toString()} type='number' register={this.registerInput} />
+                                })}
+                            </div>
+                            <div className='pads--operations'>
+                                {Object.keys(operations).map((key, index) => {
+                                    return <Button key={key.toString()} id={key.toString()} label={operations[key].toString()} type='operation' register={this.registerInput} />
+                                })}
+                                <Button key='lbracket' label='(' type='bracket' register={this.registerInput} />
+                                <Button key='rbracket' label=')' type='bracket' register={this.registerInput} />
+
+                                <Button key='equals' label='=' type='equals' register={this.registerInput} />
+                                <Button key='C' label='C' id='clear' type='clear' register={this.reset} />
+                            </div>
+                        </div>
+                        <History items={this.state.history} setValueFunc={this.setFirstInputValue} />
+                    </div>
+                    
+                </div>
+                <Blobs items={this.state.history} maxBlobs={7}/>
             </div>
-            <nav className="nav"><span className='nav__calc'>Calculator</span><span className='nav__history'>History</span></nav>
-            <div className='interface'>
-            <div className='pads'>
-            <div className='pads--numbers'>
-            <Button key = 'decimal' label='.'  type='decimal' register = {this.registerInput}/>
-            {Object.keys(numbers).map((key, index) => {
-                return <Button key = {key.toString()} id = {key.toString()} label ={numbers[key].toString()}  type='number' register = {this.registerInput}/>
-            })}
-            </div>
-            <div className='pads--operations'>
-            {Object.keys(operations).map((key, index) => {
-                return <Button key = {key.toString()} id = {key.toString()} label={operations[key].toString()}  type='operation' register = {this.registerInput}/>
-            })}
-            <Button key = 'lbracket' label='('  type='bracket' register = {this.registerInput}/>
-            <Button key = 'rbracket' label=')'  type='bracket' register = {this.registerInput}/>
-            
-            <Button key = 'equals' label='='  type='equals' register = {this.registerInput}/>
-            <Button key = 'C' label='C' id='clear'  type='clear' register = {this.reset}/>
-            </div>
-            </div>
-            <History items = {this.state.history} setValueFunc = {this.setFirstInputValue}/>
-            </div>
-            </div>)
+        )
     }
 
 }
