@@ -168,6 +168,14 @@ class InputParser {
             if (this.inputSeq.length === 0 && symbol.val !== '-') {} else {
                 //do not allow many operations in a row
                 if (this.inputSeq.length && prevSymbol.type === 'operation' && (symbol.unary === false || (symbol.unary === true && prevSymbol.unary === true))) {
+                    //if an item before the previous is also an operation e.g. 5*-+5
+                    if((this.inputSeq[this.inputSeq.length - 2]).type === 'operation'){
+                        this.inputSeq.pop()
+                        //only one minus left 
+                        if(symbol.val === '-' && symbol.unary){
+                            symbol.unary = false;
+                        }
+                    }
                     //replace the last operation with a new one
                     this.inputSeq[this.inputSeq.length - 1] = symbol;
                 }
@@ -327,8 +335,12 @@ class Calc extends React.Component {
         navCalc.classList.add('active--link');
 
         navCalc.addEventListener("click", (e) => {
-            navCalc.classList.toggle('active--link');
-            navHist.classList.toggle('active--link');
+            if(!navCalc.classList.contains('active--link')){
+                navCalc.classList.add('active--link');
+            }
+            if(navHist.classList.contains('active--link')){
+                navHist.classList.remove('active--link');
+            }
             if (pads.classList.contains("active--left")) {
                 pads.classList.remove("active--left");
             }
@@ -338,8 +350,12 @@ class Calc extends React.Component {
         });
 
         navHist.addEventListener("click", (e) => {
-            navHist.classList.toggle('active--link');
-            navCalc.classList.toggle('active--link');
+            if(!navHist.classList.contains('active--link')){
+                navHist.classList.add('active--link');
+            }
+            if(navCalc.classList.contains('active--link')){
+                navCalc.classList.remove('active--link');
+            }
             if (!pads.classList.contains("active--left")) {
                 pads.classList.add("active--left");
             }
@@ -379,7 +395,6 @@ class Calc extends React.Component {
         }
         if (symbol.type === 'equals') {
             let result = this.execute();
-            console.log('result',result);
             //check if result was calculated
             if (result!==undefined) {
                 //save expr and result to the history
@@ -407,15 +422,14 @@ class Calc extends React.Component {
     }
 
     execute() {
+        console.log(this.parser.getExpression());
         //input is stored in the parser's array  this.parser.inputSeq
         //check if expression ends with =
         if(this.parser.inputSeq.length  && this.parser.inputSeq[this.parser.inputSeq.length - 1].val !== '='){
             return undefined;
         }
-        console.log('INPUT', this.parser.getExpression());
         //don't take '=' symbol at the end - use slice
         let input = this.parser.inputSeq.slice( 0 , this.parser.inputSeq.length - 1);
-        console.log('INPUT', input);
 
         for (let i = 0; i < input.length; i++) {
             //if left bracket - just push it
@@ -460,16 +474,15 @@ class Calc extends React.Component {
             this.calcOp();
         }
         
-        let result = this.values.peek()
-        result = Math.round(result * 1000) / 1000;
-        
+        let result = this.values.peek();
+        result = Math.round(result * 100000) / 100000;
         return result;
     }
 
 
     render() {
         const numbers = { "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9 }
-        const operations = { 'add': '+', 'substract': '-', 'multiply': '*', 'divide': '/' }
+        const operations = { 'add': '+', 'subtract': '-', 'multiply': '*', 'divide': '/' }
         return (
             <div id='container'>
                 <div id='calc'>
@@ -493,7 +506,7 @@ class Calc extends React.Component {
                                 <Button key='lbracket' label='(' type='bracket' register={this.registerInput} />
                                 <Button key='rbracket' label=')' type='bracket' register={this.registerInput} />
 
-                                <Button key='equals' label='=' type='equals' register={this.registerInput} />
+                                <Button key='equals' label='=' type='equals' id='equals' register={this.registerInput} />
                                 <Button key='C' label='C' id='clear' type='clear' register={this.reset} />
                             </div>
                         </div>
