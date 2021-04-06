@@ -83,8 +83,8 @@ button {
   font-family: 'Quicksand', sans-serif;
   font-weight: 300;
   padding: 0.8em;
-  -webkit-transition: all 0.5s ease-in-out;
-  transition: all 0.5s ease-in-out;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
 }
 
 button::before {
@@ -92,8 +92,6 @@ button::before {
   z-index: -1;
   -webkit-clip-path: circle(0% at 50% 50%);
           clip-path: circle(0% at 50% 50%);
-  -webkit-transition: all 0.5s ease-in-out;
-  transition: all 0.5s ease-in-out;
   width: 100%;
   height: 100%;
   position: absolute;
@@ -101,25 +99,14 @@ button::before {
   left: 0;
   opacity: 0.4;
   background: #5e8a85;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
 }
 
 button:active::before {
   -webkit-clip-path: circle(30%);
           clip-path: circle(30%);
   opacity: 1;
-  -webkit-animation: highlight-button 100ms ease-in-out;
-          animation: highlight-button 100ms ease-in-out;
-  -webkit-transition: all 100s ease-in-out;
-  transition: all 100s ease-in-out;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  button:hover::before {
-    -webkit-clip-path: circle(30%);
-            clip-path: circle(30%);
-    opacity: 1;
-    cursor: pointer;
-  }
 }
 
 .pads--numbers > button {
@@ -220,12 +207,6 @@ button:active::before {
 .history .historyItem {
   padding: 0.5rem;
   border-radius: 73% 27% 100% 0% / 67% 80% 20% 33%;
-}
-
-.history .historyItem:hover {
-  background: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, 0)), to(#5e8a85));
-  background: linear-gradient(to right, rgba(0, 0, 0, 0), #5e8a85);
-  cursor: pointer;
 }
 
 .active--left {
@@ -504,6 +485,37 @@ button:active::before {
 @keyframes highlight-button {
   to {
     background: #ff9b54;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  button {
+    -webkit-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+  }
+  button::before {
+    -webkit-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+  }
+  button:hover::before {
+    -webkit-clip-path: circle(30%);
+            clip-path: circle(30%);
+    opacity: 1;
+    cursor: pointer;
+    -webkit-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+  }
+  button:hover:active::before {
+    -webkit-clip-path: circle(30%);
+            clip-path: circle(30%);
+    opacity: 1;
+    -webkit-animation: highlight-button 300ms ease-in-out;
+            animation: highlight-button 300ms ease-in-out;
+  }
+  .historyItem:hover {
+    background: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, 0)), to(#5e8a85));
+    background: linear-gradient(to right, rgba(0, 0, 0, 0), #5e8a85);
+    cursor: pointer;
   }
 }
 /*# sourceMappingURL=Calc.css.map */
