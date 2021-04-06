@@ -103,15 +103,21 @@ button::before {
   background: #5e8a85;
 }
 
-button:hover::before {
+button:active::before {
   -webkit-clip-path: circle(30%);
           clip-path: circle(30%);
   opacity: 1;
-  cursor: pointer;
+  -webkit-animation: highlight-button 300ms ease-in-out;
+          animation: highlight-button 300ms ease-in-out;
 }
 
-button:active::before {
-  background: #ff9b54;
+@media (hover: hover) and (pointer: fine) {
+  button:hover::before {
+    -webkit-clip-path: circle(30%);
+            clip-path: circle(30%);
+    opacity: 1;
+    cursor: pointer;
+  }
 }
 
 .pads--numbers > button {
@@ -484,6 +490,18 @@ button:active::before {
   100% {
     -webkit-transform: scale(3.57385);
             transform: scale(3.57385);
+  }
+}
+
+@-webkit-keyframes highlight-button {
+  to {
+    background: #ff9b54;
+  }
+}
+
+@keyframes highlight-button {
+  to {
+    background: #ff9b54;
   }
 }
 /*# sourceMappingURL=Calc.css.map */

@@ -52,3 +52,5 @@ button:focus {
   outline: none;
 }
 
+/* disable scrolling */
+body {margin: 0; height: 100%; overflow: hidden}
