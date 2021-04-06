@@ -19,7 +19,6 @@
 #container {
   max-width: 400px;
   width: 90%;
-  overflow: hidden;
 }
 
 #calc {
@@ -50,6 +49,7 @@
 
 .interface {
   position: relative;
+  overflow: hidden;
 }
 
 .pads--numbers {
@@ -195,12 +195,18 @@ button:active::before {
 .history {
   position: absolute;
   width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0);
   color: #e8ddb5;
   top: 0;
   left: 100%;
   -webkit-transition: all 300ms ease-in-out;
   transition: all 300ms ease-in-out;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
 }
 
 .history .historyItem {
