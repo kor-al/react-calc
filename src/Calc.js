@@ -307,6 +307,14 @@ function Blobs(props){
   )
 }
 
+function Footer() {
+    return (
+      <footer className="footer">
+        Designed and Build by <a href="https://github.com/kor-al">kor-al</a>
+      </footer>
+    );
+  }
+
 class Calc extends React.Component {
 
     constructor(props) {
@@ -512,7 +520,7 @@ class Calc extends React.Component {
                         </div>
                         <History items={this.state.history} setValueFunc={this.setFirstInputValue} />
                     </div>
-                    
+                <Footer/>
                 </div>
                 <Blobs items={this.state.history} maxBlobs={7}/>
             </div>

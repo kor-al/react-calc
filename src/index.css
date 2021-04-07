@@ -57,3 +57,16 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 ::-webkit-scrollbar {
   display: none;
 }
+
+
+a{
+  text-decoration: none;
+}
+
+a:visited{
+  color:inherit;
+}
+
+a:hover{
+  font-weight: 500;
+}
